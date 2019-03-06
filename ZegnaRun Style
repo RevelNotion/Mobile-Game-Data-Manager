@@ -1,0 +1,120 @@
+using System.Collections;                   //The first few lines allow for keywords to be pulled from Unity's library.
+using System.Collections.Generic;
+using UnityEngine;
+
+public class DataManagerPlus : MonoBehaviour {
+
+	public static DataManagerPlus Instance;   //I start by creating an instance to separate this script from any possible duplicates.
+	public SceneManager sceneManager;         //SceneManager allows me to reference scene names.
+
+	//System Variables (Events & Time)        //Variables for game related measurements are established for later use.
+	public int eventsCompleted;
+	public float seconds;
+	public float minutes;
+	public float hours;
+
+	//Character Variables (Lives & Ashe)
+	public int exeLives;
+	public int exeAshe;
+	public int gifLives;
+	public int gifAshe;
+	public int tifLives;
+	public int tifAshe;
+
+	public bool gifJoined;
+	public bool tifJoined;
+
+	void Awake(){	                            //On the first frame, I want this Instance saved as we transition through scenes,
+		if (Instance == null) {                 //while deleting any duplicates created.
+			DontDestroyOnLoad (gameObject);
+			DontDestroyOnLoad (sceneManager);
+			Instance = this;
+		} else if (Instance != this) {
+			Destroy (gameObject);
+			Destroy (sceneManager);
+		}
+	}
+	                                          // Update is called once per frame
+	void Update () {
+		ManagerComponentInitiator ();
+		GameTimer ();
+		MinimumAshe ();
+		GameOver ();
+		ResetGameStats ();
+	}
+
+	void ManagerComponentInitiator(){         // Previously established variables will only equal this instance of the variables.
+		eventsCompleted = DataManagerPlus.Instance.eventsCompleted;
+		seconds = DataManagerPlus.Instance.seconds;
+		minutes = DataManagerPlus.Instance.minutes;
+		hours = DataManagerPlus.Instance.hours;
+		exeLives = DataManagerPlus.Instance.exeLives;
+		exeAshe = DataManagerPlus.Instance.exeAshe;
+		gifLives = DataManagerPlus.Instance.gifLives;
+		gifAshe = DataManagerPlus.Instance.gifAshe;
+		tifLives = DataManagerPlus.Instance.tifLives;
+		tifAshe = DataManagerPlus.Instance.tifAshe;
+	}
+
+	void GameTimer(){                     // Counts according to Unity's internal time measurement.
+		seconds += Time.deltaTime;
+		if(seconds > 59.0f){
+			minutes++;
+			seconds = 0.0f;
+		}
+		if(minutes > 59.0f){
+			hours++;
+			minutes = 0.0f;
+			seconds = 0.0f;
+		}
+	}
+
+	void MinimumAshe(){                    // Ensures that a character's Exp never hits negative numbers.
+		if(exeAshe < 0){
+			exeAshe = 0;
+		}
+		if(gifAshe < 0){
+			gifAshe = 0;
+		}
+		if(tifAshe < 0){
+			tifAshe = 0;
+		}
+	}
+
+	void GameOver(){                    // Transitions to the "Game Over" scene when character's Lives reach zero.
+		if(exeLives < 1 && sceneManager.levelName != "DefeatScene"){
+			Application.LoadLevel("DefeatScene");
+		}
+	}
+
+	void ResetGameStats(){              // Resets all game parameters at the "Title Screen" scene.
+		if (sceneManager != null) {
+			if (sceneManager.levelName == "Title Screen") {
+				exeLives = 50;	//Reset Lives
+				gifLives = 50;
+				tifLives = 50;
+				exeAshe = 0;	//Reset Ashe
+				gifAshe = 0;
+				tifAshe = 0;
+				eventsCompleted = 0;	//Reset Events
+				seconds = 0.0f;
+				minutes = 0.0f;
+				hours = 0.0f;
+			}
+		}
+	}
+
+	public void SavePlayer(){         // Allows user to save the instance of a variable to a current game.
+		DataManagerPlus.Instance.eventsCompleted = eventsCompleted;
+		DataManagerPlus.Instance.seconds = seconds;
+		DataManagerPlus.Instance.minutes = minutes;
+		DataManagerPlus.Instance.hours = hours;
+
+		DataManagerPlus.Instance.exeLives = exeLives;
+		DataManagerPlus.Instance.exeAshe = exeAshe;
+		DataManagerPlus.Instance.gifLives = gifLives;
+		DataManagerPlus.Instance.gifAshe = gifAshe;
+		DataManagerPlus.Instance.tifLives = tifLives;
+		DataManagerPlus.Instance.tifAshe = tifAshe;
+	}
+}
